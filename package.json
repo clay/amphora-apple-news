@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/clay/amphora-apple-news/issues"
   },
-  "homepage": "https://github.com/clay/amphora-apple-news#readme"
+  "homepage": "https://github.com/clay/amphora-apple-news#readme",
+  "dependencies": {
+    "lodash": "^4.17.4"
+  }
 }
