@@ -1,0 +1,19 @@
+{
+  "name": "amphora-apple-news",
+  "version": "0.0.1",
+  "description": "An Amphora renderer for Apple News Format",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clay/amphora-apple-news.git"
+  },
+  "author": "Zoe Chodosh",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/clay/amphora-apple-news/issues"
+  },
+  "homepage": "https://github.com/clay/amphora-apple-news#readme"
+}
