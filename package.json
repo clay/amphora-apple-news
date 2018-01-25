@@ -10,13 +10,14 @@
     "type": "git",
     "url": "git+https://github.com/clay/amphora-apple-news.git"
   },
-  "author": "Zoe Chodosh",
+  "author": "New York Media",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/clay/amphora-apple-news/issues"
   },
   "homepage": "https://github.com/clay/amphora-apple-news#readme",
   "dependencies": {
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "nymag-fs": "^1.0.1"
   }
 }
