@@ -5,23 +5,16 @@ const _ = require('lodash'),
   files = require('nymag-fs');
 
 function getSiteConfig(site) {
-  const ymlPath = path.resolve(site.dir, 'anf.yml').replace('.yml', '');
+  const ymlPath = path.resolve(site.dir, 'anf.yml').replace('.yml', ''); // files.getYaml adds the file extension for some reason, so remove it here
 
   return files.getYaml(ymlPath);
 }
 
 function render(data) {
-  const article = Object.assign({}, data._data, getSiteConfig(data.site));
+  const article = Object.assign({}, _.omit(data._data, 'content'), getSiteConfig(data.site)),
+    { content } = data._data || [];
 
   article.components = [];
-  article.version = '1.5';
-  article.language = 'en';
-  article.layout = {
-    columns: 10,
-    width: 1024,
-    margin: 85,
-    gutter: 20
-  };
 
   /*
    * we only want to add components that have been formatted for apple news
@@ -32,18 +25,21 @@ function render(data) {
    * with an array of formatted anf components
    */
 
-  _.forEach(article.content, (item) => {
+  _.forEach(content, (item) => {
     if (item.role) {
-      article.components.push(_.omit(item, '_ref'));
+      article.components.push(_.omit(item, '_ref')); // remove the _ref prop that amphora adds, it isn't allowed in ANF
     } else if (item.multi) {
       _.forEach(item.components, (cmpt) => article.components.push(cmpt));
     }
   });
 
   return {
-    output: _.omit(article, 'content'),
+    output: article,
     type: 'json'
-  }
+  };
 }
 
 module.exports.render = render;
+
+// for testing
+module.exports.getSiteConfig = getSiteConfig;
