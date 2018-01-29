@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/clay/amphora-apple-news#readme",
   "dependencies": {
+    "clay-log": "^1.2.1",
     "lodash": "^4.17.4",
     "nymag-fs": "^1.0.1"
   },

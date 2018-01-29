@@ -49,6 +49,10 @@ describe(_.startCase(filename), function () {
     it('returns the site config yml as a js Object', function () {
       expect(fn(data.site)).to.eql({ language: 'en', version: '1.5', identifier: 'askdfghergmdslfajf' });
     });
+
+    it('returns nothing if no site path is passed in', function () {
+      expect(fn({ dir: 'the/wrong/path' })).to.be.null;
+    });
   });
 
   describe('render', function () {
@@ -100,6 +104,12 @@ describe(_.startCase(filename), function () {
       const data = { site, '_data': { content: mockContent() } };
 
       expect(fn(data).type).to.equal('json');
-    })
+    });
+
+    it('returns nothing if site config was not found', function () {
+      const data = { site: { dir: 'not/the/path' }, '_data': { content: mockContent() } };
+
+      expect(fn(data)).to.be.undefined;
+    });
   });
 });

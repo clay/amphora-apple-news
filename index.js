@@ -2,17 +2,28 @@
 
 const _ = require('lodash'),
   path = require('path'),
-  files = require('nymag-fs');
+  files = require('nymag-fs'),
+  log = require('./services/log').setup({ file: __filename });
 
 function getSiteConfig(site) {
   const ymlPath = path.resolve(site.dir, 'anf.yml').replace('.yml', ''); // files.getYaml adds the file extension for some reason, so remove it here
+
+  if (!ymlPath) {
+    return;
+  }
 
   return files.getYaml(ymlPath);
 }
 
 function render(data) {
-  const article = Object.assign({}, _.omit(data._data, 'content'), getSiteConfig(data.site)),
+  const article = Object.assign({}, _.omit(data._data, 'content')),
+    siteConfig = getSiteConfig(data.site),
     { content } = data._data || [];
+
+  if (!siteConfig) {
+    log('error', { message: 'No anf.yml config file found for this site' });
+    return;
+  }
 
   article.components = [];
 
@@ -34,7 +45,7 @@ function render(data) {
   });
 
   return {
-    output: article,
+    output: Object.assign({}, article, siteConfig),
     type: 'json'
   };
 }
