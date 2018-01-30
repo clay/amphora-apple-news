@@ -51,6 +51,33 @@ describe(_.startCase(filename), function () {
     });
   });
 
+  describe('cleanComponent', function () {
+    const fn = lib[this.title],
+      cmpt = {
+        '_ref': 'uri.com/some/container/component',
+        role: 'section',
+        components: [
+          {
+            '_ref': 'uri.com/some/component',
+            role: 'body',
+            text: 'some body text'
+          },
+          {
+            '_ref': 'uri.com/some/unsupported/component',
+            title: 'I Shouldn\'t Be Rendered For Apple News'
+          }
+        ]
+      };
+
+    it('correctly cleans an ANF "container"-type component with nested child components', function () {
+      expect(fn(cmpt).components).to.eql([{ role: 'body', text: 'some body text' }]);
+    });
+
+    it('omits the _ref from the ANF "container"-type component', function () {
+      expect(fn(cmpt)._ref).to.be.undefined;
+    });
+  });
+
   describe('render', function () {
     const fn = lib[this.title],
       site = { dir: FAKE_SITE_DIR };
@@ -102,4 +129,5 @@ describe(_.startCase(filename), function () {
       expect(fn(data).type).to.equal('json');
     })
   });
+
 });
