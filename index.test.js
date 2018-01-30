@@ -54,7 +54,9 @@ describe(_.startCase(filename), function () {
     });
 
     it('throws an error if site path does not have an anf.yml file', function () {
-      expect(fn({dir: 'the/wrong/path'})).to.throw();
+      expect(() => {
+        fn({dir: 'the/wrong/path'});
+      }).to.throw();
       sinon.assert.calledOnce(logFn);
       sinon.assert.calledWith(logFn, 'error');
     });
@@ -109,12 +111,6 @@ describe(_.startCase(filename), function () {
       const data = { site, '_data': { content: mockContent() } };
 
       expect(fn(data).type).to.equal('json');
-    });
-
-    it('returns nothing if site config was not found', function () {
-      const data = { site: { dir: 'not/the/path' }, '_data': { content: mockContent() } };
-
-      expect(fn(data)).to.be.undefined;
     });
   });
 });

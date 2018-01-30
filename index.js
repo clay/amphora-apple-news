@@ -22,11 +22,6 @@ function render(data) {
     siteConfig = getSiteConfig(data.site),
     { content } = data._data || [];
 
-  if (!siteConfig) {
-    log('error', { message: 'No anf.yml config file found for this site' });
-    return;
-  }
-
   article.components = [];
 
   /*
