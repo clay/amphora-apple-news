@@ -28,8 +28,12 @@ describe(_.startCase(filename), function () {
         text: 'This is a Story'
       },
       {
+        '_ref': 'some/unrenderable/component',
+        text: 'I contribute nothing to the discourse !!'
+      },
+      {
         '_ref': 'some/component/uri3',
-        multi: true,
+        role: 'container',
         components: [
           {
             role: 'photo',
@@ -38,10 +42,62 @@ describe(_.startCase(filename), function () {
           {
             role: 'caption',
             text: 'Photo: zoe\'s photo studio'
+          },
+          {
+            '_ref': 'some/unrenderable/component',
+            text: 'I should not be rendered for apple news!'
+          },
+          {
+            role: 'section',
+            components: [
+              {
+                '_ref': 'useless/thing'
+              },
+              {
+                '_ref': 'useable/thing',
+                role: 'body',
+                text: 'hey there!'
+              }
+            ]
           }
         ]
       }
     ];
+  }
+
+  function mockCmpt() {
+    return {
+      '_ref': 'some/component/uri3',
+      role: 'container',
+      components: [
+        {
+          role: 'photo',
+          URL: 'zoe.com/coolpic.jpg'
+        },
+        {
+          '_ref': 'component/ref',
+          role: 'caption',
+          text: 'Photo: zoe\'s photo studio'
+        },
+        {
+          '_ref': 'some/unrenderable/component',
+          text: 'I should not be rendered for apple news!'
+        },
+        {
+          role: 'section',
+          components: [
+            {
+              '_ref': 'useless/thing'
+            },
+            {
+              '_ref': 'useable/thing',
+              role: 'body',
+              text: 'hey there!'
+            }
+          ]
+        }
+      ]
+    };
   }
 
   describe('getSiteConfig', function () {
@@ -59,6 +115,42 @@ describe(_.startCase(filename), function () {
       sinon.assert.calledOnce(logFn);
       sinon.assert.calledWith(logFn, 'error');
     });
+  });
+
+  describe('sanitizeComponent', function () {
+    const data = mockCmpt(),
+      fn = lib[this.title];
+
+    it('returns a component without the _ref property', function () {
+      expect(fn(data)).to.not.have.own.property('_ref');
+    });
+
+    it('correctly sanitizes components with nested component lists', function () {
+      const sanitized = {
+        role: 'container',
+        components: [
+          {
+            role: 'photo',
+            URL: 'zoe.com/coolpic.jpg'
+          },
+          {
+            role: 'caption',
+            text: 'Photo: zoe\'s photo studio'
+          },
+          {
+            role: 'section',
+            components: [
+              {
+                role: 'body',
+                text: 'hey there!'
+              }
+            ]
+          }
+        ]
+      };
+
+      expect(fn(data)).to.eql(sanitized);
+    })
   });
 
   describe('render', function () {
@@ -86,22 +178,17 @@ describe(_.startCase(filename), function () {
       });
     });
 
-    it('includes a component if it does not have the "role" property but does have the "multi" property', function () {
-      const data = { site, '_data': { content: mockContent() } };
+    it('does not include components without a "role" property', function () {
+      const data = { site, '_data': { content: mockContent() } },
+        { output } = fn(data);
 
-      expect(fn(data).output.components[1].role).to.equal('photo');
-      expect(fn(data).output.components[2].role).to.equal('caption');
-    });
-
-    it('does not include components without a "role" or "multi" property', function () {
-      const data = { site, '_data': { content: [ { '_ref': 'some/uri' } ] } };
-
-      expect(fn(data).output.components).to.be.empty;
+      expect(_.filter(output.components, (cmpt) => !cmpt.role)).to.be.empty;
+      sinon.assert.calledThrice(logFn);
     });
 
     it('removes the "_ref" property from all included ANF components', function () {
       const data = { site, '_data': { content: mockContent() } },
-        output = fn(data).output;
+        { output } = fn(data);
 
       expect(_.filter(output.components, (cmpt) => !!cmpt._ref)).to.be.empty;
     });
@@ -112,4 +199,5 @@ describe(_.startCase(filename), function () {
       expect(fn(data).type).to.equal('json');
     });
   });
+
 });

@@ -48,34 +48,11 @@ module.exports = function (ref, data, locals) {
 };
 ```
 
-All Apple News components must include a `role` property, which tells Apple News what type of component to render. The Amphora Apple News Renderer will not render a component without a `role` property unless it is specified as a multi-part component.
+All Apple News components must include a `role` property, which tells Apple News what type of component to render. The Amphora Apple News Renderer will not render a component without a `role` property.
 
-### Multi-Part Components
+### Top-Level Component
 
-Apple News components are much simpler than Clay components, so sometimes the translation from Clay to Apple News requires rendering more than one Apple News componen for one Clay component. An example of this is a Clay image component, which, in HTML, renders the photo and caption in one component. Apple News Format requires a Photo component and a Caption component to make this possible, so we break the Clay component into multiple Apple News components in the renderer.
-
-```javascript
-module.exports = function (ref, data, locals) {
-  return {
-    multi: true,
-    components: [
-      {
-        role: 'photo',
-        URL: data.url
-      },
-      {
-        role: 'caption',
-        text: data.caption
-      }
-    ]
-  };
-};
-
-```
-
-Amphora Apple News will recognize this input as a multi-part component and will render the contents of the `components` list at the same level as other single components. Amphora Apple News will not render a component unless it has a `role` property or both a `multi` property and a `components` property.
-
-Amphora will render components from the deepest level up, which makes it easy to render articles' component lists. For example, if a Clay `article` component is used as the highest level component to be rendered by Apple News, all items in the article's `content` component list will be rendered for Apple News before the article, that way the article can add `title`, `byline`, and other `heading` components to the top of its content list as well as set page metadata for Apple News before hitting the Amphora Apple News renderer. The renderer can then transform the article's `content` list into the correctly formatted `components` list that Apple News expects. The renderer will also add site-specific configuration, style, and layout properties to the article, specified in an anf.yml file in your site's directory.
+This renderer was designed to consume a component that embeds other components in an array called `content`. It will not work correctly for a component that does not have a `content` array. Amphora will render components from the deepest level up, which makes it easy to render articles' component lists. For example, if a Clay `article` component is used as the highest level component to be rendered by Apple News, all items in the article's `content` component list will be rendered for Apple News before the article, that way the article can add `title`, `byline`, and other `heading` components to the top of its content list as well as set page metadata for Apple News before hitting the Amphora Apple News renderer. The renderer can then transform the article's `content` list into the correctly formatted `components` list that Apple News expects. The renderer will also add site-specific configuration, style, and layout properties to the article, specified in an anf.yml file in your site's directory.
 
 ### Site-Specific Configuration
 

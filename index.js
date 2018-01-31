@@ -20,27 +20,33 @@ function getSiteConfig(site) {
   }
 }
 
+function sanitizeComponent(cmpt) {
+  if (cmpt.role && !cmpt.components) { // base case: a component without nested children. return it without the _ref
+    return _.omit(cmpt, '_ref');
+  } else if (cmpt.components && cmpt.role) { // apple news "container" type component with nested children.
+    // clean each of the children and return the parent with clean children & no _ref
+    // also filters out children that aren't formatted for apple news
+    cmpt.components = _.filter(_.map(cmpt.components, (c) => sanitizeComponent(c)), (clean) => !!clean);
+    return _.omit(cmpt, '_ref');
+  } else {
+    log('warning', 'Component not formatted for apple news, skipping', cmpt);
+    return;
+  }
+}
+
 function render(data) {
   const article = Object.assign({}, _.omit(data._data, 'content')),
     siteConfig = getSiteConfig(data.site),
-    { content } = data._data || [];
+    content = _.get(data, '_data.content', []);
+  let cmpt;
 
   article.components = [];
 
-  /*
-   * we only want to add components that have been formatted for apple news
-   * the easiest way to tell this is if the component has a 'role' property
-   * if the component doesn't have a role, check for the 'multi' property
-   * some single clay components translate to multiple apple news components,
-   * in this case the component's anf renderer returns an object with the multi prop
-   * with an array of formatted anf components
-   */
+  _.forEach(content, (c) => {
+    cmpt = sanitizeComponent(c);
 
-  _.forEach(content, (item) => {
-    if (item.role) {
-      article.components.push(_.omit(item, '_ref')); // remove the _ref prop that amphora adds, it isn't allowed in ANF
-    } else if (item.multi) {
-      _.forEach(item.components, (cmpt) => article.components.push(cmpt));
+    if (cmpt) {
+      article.components.push(cmpt);
     }
   });
 
@@ -54,4 +60,5 @@ module.exports.render = render;
 
 // for testing
 module.exports.getSiteConfig = getSiteConfig;
+module.exports.sanitizeComponent = sanitizeComponent;
 module.exports.setLog = (fakeLog) => { log = fakeLog };
