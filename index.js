@@ -12,7 +12,7 @@ function getSiteConfig(site) {
   if (files.fileExists(ymlPath)) {
     return files.getYaml(ymlPath.replace('.yml', '')); // files.getYaml adds the file extension for some reason, so remove it here
   } else {
-    log('error', { message: 'No anf.yml config file found for this site' });
+    log('error', 'No anf.yml config file found for this site');
     throw new Error('No anf.yml config file found for this site');
   }
 }
