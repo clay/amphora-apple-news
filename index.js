@@ -29,7 +29,7 @@ function sanitizeComponent(cmpt) {
     cmpt.components = _.filter(_.map(cmpt.components, (c) => sanitizeComponent(c)), (clean) => !!clean);
     return _.omit(cmpt, '_ref');
   } else {
-    log('warning', 'Component not formatted for apple news, skipping', cmpt);
+    log('warn', 'Component not formatted for apple news, skipping', cmpt);
     return;
   }
 }
