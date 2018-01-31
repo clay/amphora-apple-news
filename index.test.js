@@ -1,7 +1,6 @@
 const _ = require('lodash'),
   filename = __filename.split('/').pop().split('.').shift(),
   lib = require('./' + filename),
-  files = require('nymag-fs'),
   expect = require('chai').expect,
   sinon = require('sinon'),
   path = require('path'),
