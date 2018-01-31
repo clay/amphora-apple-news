@@ -1,4 +1,7 @@
 # Amphora Apple News
+
+[![Coverage Status](https://coveralls.io/repos/github/clay/amphora-apple-news/badge.svg)](https://coveralls.io/github/clay/amphora-apple-news) [![CircleCI](https://circleci.com/gh/clay/amphora-apple-news.svg?style=svg)](https://circleci.com/gh/clay/amphora-apple-news)
+
 The [Apple News Format](https://developer.apple.com/library/content/documentation/General/Conceptual/Apple_News_Format_Ref/index.html#//apple_ref/doc/uid/TP40015408-CH79-SW1) renderer for Clay components.
 
 ## Install
