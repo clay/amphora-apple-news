@@ -125,6 +125,33 @@ describe(_.startCase(filename), function () {
     it('returns a component without the _ref property', function () {
       expect(fn(data)).to.not.have.own.property('_ref');
     });
+
+    it('correctly sanitizes components with nested component lists', function () {
+      const sanitized = {
+        role: 'container',
+        components: [
+          {
+            role: 'photo',
+            URL: 'zoe.com/coolpic.jpg'
+          },
+          {
+            role: 'caption',
+            text: 'Photo: zoe\'s photo studio'
+          },
+          {
+            role: 'section',
+            components: [
+              {
+                role: 'body',
+                text: 'hey there!'
+              }
+            ]
+          }
+        ]
+      };
+
+      expect(fn(data)).to.eql(sanitized);
+    })
   });
 
   describe('render', function () {
