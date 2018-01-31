@@ -157,6 +157,7 @@ describe(_.startCase(filename), function () {
         { output } = fn(data);
 
       expect(_.filter(output.components, (cmpt) => !cmpt.role)).to.be.empty;
+      sinon.assert.calledThrice(logFn);
     });
 
     it('removes the "_ref" property from all included ANF components', function () {
