@@ -4,10 +4,17 @@ const _ = require('lodash'),
   path = require('path'),
   files = require('nymag-fs');
 
-function getSiteConfig(site) {
-  const ymlPath = path.resolve(site.dir, 'anf.yml').replace('.yml', ''); // files.getYaml adds the file extension for some reason, so remove it here
+var log = require('./services/log').setup({ file: __filename });
 
-  return files.getYaml(ymlPath);
+function getSiteConfig(site) {
+  const ymlPath = path.resolve(site.dir, 'anf.yml');
+
+  if (files.fileExists(ymlPath)) {
+    return files.getYaml(ymlPath.replace('.yml', '')); // files.getYaml adds the file extension for some reason, so remove it here
+  } else {
+    log('error', 'No anf.yml config file found for this site');
+    throw new Error('No anf.yml config file found for this site');
+  }
 }
 
 function sanitizeComponent(cmpt) {
@@ -19,12 +26,14 @@ function sanitizeComponent(cmpt) {
     cmpt.components = _.filter(_.map(cmpt.components, (c) => sanitizeComponent(c)), (clean) => !!clean);
     return _.omit(cmpt, '_ref');
   } else {
+    log('warning', 'Component not formatted for apple news, skipping', cmpt);
     return;
   }
 }
 
 function render(data) {
-  const article = Object.assign({}, _.omit(data._data, 'content'), getSiteConfig(data.site)),
+  const article = Object.assign({}, _.omit(data._data, 'content')),
+    siteConfig = getSiteConfig(data.site),
     content = _.get(data, '_data.content', []);
   let cmpt;
 
@@ -39,7 +48,7 @@ function render(data) {
   });
 
   return {
-    output: article,
+    output: Object.assign({}, article, siteConfig),
     type: 'json'
   };
 }
@@ -49,3 +58,4 @@ module.exports.render = render;
 // for testing
 module.exports.getSiteConfig = getSiteConfig;
 module.exports.sanitizeComponent = sanitizeComponent;
+module.exports.setLog = (fakeLog) => { log = fakeLog };
