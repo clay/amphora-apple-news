@@ -8,10 +8,13 @@ const _ = require('lodash'),
   FAKE_SITE_DIR = path.resolve(__dirname, './test/config/sites/mockSite');
 
 describe(_.startCase(filename), function () {
-  let sandbox;
+  let sandbox,
+    logFn;
 
   beforeEach(function () {
     sandbox = sinon.sandbox.create();
+    logFn = sandbox.spy();
+    lib.setLog(logFn);
   });
 
   afterEach(function () {
@@ -48,6 +51,14 @@ describe(_.startCase(filename), function () {
 
     it('returns the site config yml as a js Object', function () {
       expect(fn(data.site)).to.eql({ language: 'en', version: '1.5', identifier: 'askdfghergmdslfajf' });
+    });
+
+    it('throws an error if site path does not have an anf.yml file', function () {
+      expect(() => {
+        fn({dir: 'the/wrong/path'});
+      }).to.throw();
+      sinon.assert.calledOnce(logFn);
+      sinon.assert.calledWith(logFn, 'error');
     });
   });
 
@@ -100,6 +111,6 @@ describe(_.startCase(filename), function () {
       const data = { site, '_data': { content: mockContent() } };
 
       expect(fn(data).type).to.equal('json');
-    })
+    });
   });
 });
