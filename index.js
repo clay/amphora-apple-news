@@ -64,6 +64,14 @@ function sanitizeComponent(cmpt) {
   }
 }
 
+/**
+ * render
+ *
+ * formats an amphora-resolved component for Apple News
+ *
+ * @param {Object} data
+ * @returns {Object} Component rendered for Apple News Format
+ */
 function render(data) {
   const article = Object.assign({}, _.omit(data._data, 'content')),
     siteConfig = getSiteConfig(data.site),
