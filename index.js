@@ -7,17 +7,23 @@ const _ = require('lodash'),
 
 var log = require('./services/log').setup({ file: __filename });
 
-function getSiteConfig(site) {
-  const ymlPath = path.resolve(site.dir, 'anf.yml');
-
+const loadYml = _.memoize(function readFile(filePath) {
   try {
-    const file = files.readFileSync(ymlPath, 'utf8');
+    const file = files.readFileSync(filePath, 'utf8');
 
     return yml.safeLoad(file); // files.getYaml adds the file extension for some reason, so remove it here
   } catch (e) {
-    log('error', 'No anf.yml config file found for this site');
-    throw new Error('No anf.yml config file found for this site');
+    const err = new Error('No anf.yml config file found for this site');
+
+    log('error', err.message);
+    throw err;
   }
+});
+
+function getSiteConfig(site) {
+  const ymlPath = path.resolve(site.dir, 'anf.yml');
+
+  return loadYml(ymlPath);
 }
 
 function sanitizeComponent(cmpt) {
@@ -29,7 +35,7 @@ function sanitizeComponent(cmpt) {
     cmpt.components = _.filter(_.map(cmpt.components, (c) => sanitizeComponent(c)), (clean) => !!clean);
     return _.omit(cmpt, '_ref');
   } else {
-    log('warn', 'Component not formatted for apple news, skipping', _.pick(cmpt, '_ref'));
+    log('warn', 'Component not formatted for apple news, skipping', { name: _.get(cmpt, '_ref', 'unknown') });
     return;
   }
 }
