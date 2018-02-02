@@ -10,7 +10,7 @@ var log = require('./services/log').setup({ file: __filename });
 /**
  * readFile
  *
- * memoized file read function
+ * memoizes function that reads and translates YAML file
  *
  * @param {String} filePath
  * @returns {Object} yml file's contents as a Javascript object
@@ -45,7 +45,9 @@ function getSiteConfig(site) {
 /**
  * sanitizeComponent
  *
- * recursively iterates through a component and its `components` (if any) and removes disallowed properties and unrenderable components from lists
+ * recursively iterates through a component and its `components` (if any)
+ * and removes disallowed properties and unrenderable components from lists
+ * logs a warning when a component is removed from the output
  *
  * @param {Object} cmpt component to be sanitized
  * @returns {Object} Sanitized component
@@ -67,7 +69,7 @@ function sanitizeComponent(cmpt) {
 /**
  * render
  *
- * formats an amphora-resolved component for Apple News
+ * formats an article component for Apple News
  *
  * @param {Object} data
  * @returns {Object} Component rendered for Apple News Format
