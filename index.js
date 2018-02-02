@@ -7,6 +7,14 @@ const _ = require('lodash'),
 
 var log = require('./services/log').setup({ file: __filename });
 
+/**
+ * readFile
+ *
+ * memoizes function that reads and translates YAML file
+ *
+ * @param {String} filePath
+ * @returns {Object} yml file's contents as a Javascript object
+ */
 const loadYml = _.memoize(function readFile(filePath) {
   try {
     const file = files.readFileSync(filePath, 'utf8');
@@ -20,12 +28,30 @@ const loadYml = _.memoize(function readFile(filePath) {
   }
 });
 
+/**
+ * getSiteConfig
+ *
+ * gets anf.yml configuration file from the site's directory
+ *
+ * @param {Object} site
+ * @returns {Object} JS Object from site's anf.yml file
+ */
 function getSiteConfig(site) {
   const ymlPath = path.resolve(site.dir, 'anf.yml');
 
   return loadYml(ymlPath);
 }
 
+/**
+ * sanitizeComponent
+ *
+ * recursively iterates through a component and its `components` (if any)
+ * and removes disallowed properties and unrenderable components from lists
+ * logs a warning when a component is removed from the output
+ *
+ * @param {Object} cmpt component to be sanitized
+ * @returns {Object} Sanitized component
+ */
 function sanitizeComponent(cmpt) {
   if (cmpt.role && !cmpt.components) { // base case: a component without nested children. return it without the _ref
     return _.omit(cmpt, '_ref');
@@ -40,6 +66,14 @@ function sanitizeComponent(cmpt) {
   }
 }
 
+/**
+ * render
+ *
+ * formats an article component for Apple News
+ *
+ * @param {Object} data
+ * @returns {Object} Component rendered for Apple News Format
+ */
 function render(data) {
   const article = Object.assign({}, _.omit(data._data, 'content')),
     siteConfig = getSiteConfig(data.site),
