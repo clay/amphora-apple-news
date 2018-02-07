@@ -69,7 +69,7 @@ function sanitizeComponent(cmpt) {
 /**
  * render
  *
- * formats an article component for Apple News
+ * formats a component for Apple News
  *
  * @param {Object} data
  * @returns {Object} Component rendered for Apple News Format
