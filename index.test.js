@@ -157,14 +157,14 @@ describe(_.startCase(filename), function () {
     const fn = lib[this.title],
       site = { dir: FAKE_SITE_DIR };
 
-    it('returns the article without a content array', function () {
+    it('returns an article without a content array', function () {
       const data = Object.assign({}, { site }, { '_data': { content: [], title: 'Wow cool' } });
 
       expect(fn(data).output).to.not.have.own.property('content');
     });
 
-    it('returns an article with the properties from the site config', function () {
-      const data = { site };
+    it('returns an article with the properties from the site config if the request has the "config" query param', function () {
+      const data = { site, '_data': { content: mockContent() }, locals: { query: { config: true } } };
 
       expect(fn(data).output).to.have.own.property('language');
     });
@@ -193,11 +193,17 @@ describe(_.startCase(filename), function () {
       expect(_.filter(output.components, (cmpt) => !!cmpt._ref)).to.be.empty;
     });
 
+    it('does not render the site config if the request does not have the "config" query param', function () {
+      const data = { site, '_data': mockCmpt() },
+        { output } = fn(data);
+
+      expect(output).to.not.have.own.property('language');
+    });
+
     it('sets the output type to "json"', function () {
       const data = { site, '_data': { content: mockContent() } };
 
       expect(fn(data).type).to.equal('json');
     });
   });
-
 });

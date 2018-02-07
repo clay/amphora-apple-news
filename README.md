@@ -53,13 +53,9 @@ module.exports = function (ref, data, locals) {
 
 All Apple News components must include a `role` property, which tells Apple News what type of component to render. The Amphora Apple News Renderer will not render a component without a `role` property.
 
-### Top-Level Component
-
-This renderer was designed to consume a component that embeds other components in an array called `content`. It will not work correctly for a component that does not have a `content` array. Amphora will render components from the deepest level up, which makes it easy to render articles' component lists. For example, if a Clay `article` component is used as the highest level component to be rendered by Apple News, all items in the article's `content` component list will be rendered for Apple News before the article, that way the article can add `title`, `byline`, and other `heading` components to the top of its content list as well as set page metadata for Apple News before hitting the Amphora Apple News renderer. The renderer can then transform the article's `content` list into the correctly formatted `components` list that Apple News expects. The renderer will also add site-specific configuration, style, and layout properties to the article, specified in an anf.yml file in your site's directory.
-
 ### Site-Specific Configuration
 
-Amphora Apple News will look for an `anf.yml` file in your site's directory that should include all of the applicable [Top-Level Properties](https://developer.apple.com/library/content/documentation/General/Conceptual/Apple_News_Format_Ref/Properties.html#//apple_ref/doc/uid/TP40015408-CH2-SW1) needed to render a page in Apple News Format. This should include component styles, layouts, metadata, etc. Amphora Apple News will transform the YML in this file to a javascript object and assign it to the top level of its output. An example anf.yml file should look like this:
+If the request to Amphora Apple News contains the query param `config=true`, the renderer will look for an `anf.yml` file in your site's directory that should include all of the applicable [Top-Level Properties](https://developer.apple.com/library/content/documentation/General/Conceptual/Apple_News_Format_Ref/Properties.html#//apple_ref/doc/uid/TP40015408-CH2-SW1) needed to render a page in Apple News Format. This should include component styles, layouts, metadata, etc. Amphora Apple News will transform the YML in this file to a javascript object and assign it to the top level of its output. An example anf.yml file should look like this:
 
 ```yml
 version: '1.5'
