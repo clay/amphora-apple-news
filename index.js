@@ -75,23 +75,26 @@ function sanitizeComponent(cmpt) {
  * @returns {Object} Component rendered for Apple News Format
  */
 function render(data) {
-  const article = Object.assign({}, _.omit(data._data, 'content')),
-    siteConfig = getSiteConfig(data.site),
-    content = _.get(data, '_data.content', []);
+  const output = Object.assign({}, _.omit(data._data, ['content', '_ref'])),
+    content = _.get(data, '_data.content') || _.get(data, '_data.components');
   let cmpt;
 
-  article.components = [];
+  output.components = [];
 
   _.forEach(content, (c) => {
     cmpt = sanitizeComponent(c);
 
     if (cmpt) {
-      article.components.push(cmpt);
+      output.components.push(cmpt);
     }
   });
 
+  if (_.get(data, 'locals.query.config', false)) {
+    _.assign(output, getSiteConfig(data.site));
+  }
+
   return {
-    output: Object.assign({}, article, siteConfig),
+    output,
     type: 'json'
   };
 }
