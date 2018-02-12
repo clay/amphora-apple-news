@@ -101,7 +101,7 @@ describe(_.startCase(filename), function () {
   }
 
   describe('getSiteConfig', function () {
-    const data = { site: { dir: FAKE_SITE_DIR } },
+    const data = { site: { dir: FAKE_SITE_DIR, slug: 'verygoodsite' } },
       fn = lib[this.title];
 
     it('returns the site config yml as a js Object', function () {
@@ -167,6 +167,12 @@ describe(_.startCase(filename), function () {
       const data = { site, '_data': { content: mockContent() }, locals: { query: { config: true } } };
 
       expect(fn(data).output).to.have.own.property('language');
+    });
+
+    it('returns an article with the site slug if the request has the "config" query param', function () {
+      const data = { site, '_data': { content: mockContent() }, locals: { query: { config: true } } };
+
+      expect(fn(data).output).to.have.own.property('siteSlug');
     });
 
     it('includes a component if it has a "role" property', function () {

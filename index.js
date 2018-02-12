@@ -91,6 +91,7 @@ function render(data) {
 
   if (_.get(data, 'locals.query.config', false)) {
     _.assign(output, getSiteConfig(data.site));
+    output.siteSlug = data.site.slug;
   }
 
   return {
