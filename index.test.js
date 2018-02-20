@@ -20,6 +20,12 @@ describe(_.startCase(filename), function () {
     sandbox.restore();
   });
 
+  function mockRes(box) {
+    return {
+      json: box.spy()
+    };
+  }
+
   function mockContent() {
     return [
       {
@@ -100,6 +106,10 @@ describe(_.startCase(filename), function () {
     };
   }
 
+  function getArgs(spy) {
+    return spy.getCall(0).args;
+  }
+
   describe('getSiteConfig', function () {
     const data = { site: { dir: FAKE_SITE_DIR, slug: 'verygoodsite' } },
       fn = lib[this.title];
@@ -157,28 +167,48 @@ describe(_.startCase(filename), function () {
     const fn = lib[this.title],
       site = { dir: FAKE_SITE_DIR };
 
-    it('returns an article without a content array', function () {
-      const data = Object.assign({}, { site }, { '_data': { content: [], title: 'Wow cool' } });
+    it('responds with json', function () {
+      const data = { site, '_data': { content: mockContent() } },
+        res = mockRes(sandbox);
 
-      expect(fn(data).output).to.not.have.own.property('content');
+      fn(data, res);
+
+      sinon.assert.calledOnce(res.json);
+    });
+
+    it('returns an article without a content array', function () {
+      const data = Object.assign({}, { site }, { '_data': { content: [], title: 'Wow cool' } }),
+        res = mockRes(sandbox);
+
+      fn(data, res);
+      sinon.assert.calledWith(res.json, { components: [], title: 'Wow cool' });
     });
 
     it('returns an article with the properties from the site config if the request has the "config" query param', function () {
-      const data = { site, '_data': { content: mockContent() }, locals: { query: { config: true } } };
+      const data = { site, '_data': { content: mockContent() }, locals: { query: { config: true } } },
+        res = mockRes(sandbox);
 
-      expect(fn(data).output).to.have.own.property('language');
+      fn(data, res);
+
+      expect(getArgs(res.json)[0]).to.have.own.property('language');
     });
 
     it('returns an article with the site slug if the request has the "config" query param', function () {
-      const data = { site, '_data': { content: mockContent() }, locals: { query: { config: true } } };
+      const data = { site, '_data': { content: mockContent() }, locals: { query: { config: true } } },
+        res = mockRes(sandbox);
 
-      expect(fn(data).output).to.have.own.property('siteSlug');
+      fn(data, res);
+
+      expect(getArgs(res.json)[0]).to.have.own.property('siteSlug');
     });
 
     it('includes a component if it has a "role" property', function () {
-      const data = { site, '_data': { content: mockContent() } };
+      const data = { site, '_data': { content: mockContent() } },
+        res = mockRes(sandbox);
 
-      expect(fn(data).output.components[0]).to.eql({
+      fn(data, res);
+
+      expect(getArgs(res.json)[0].components[0]).to.eql({
         role: 'title',
         text: 'This is a Story'
       });
@@ -186,30 +216,31 @@ describe(_.startCase(filename), function () {
 
     it('does not include components without a "role" property', function () {
       const data = { site, '_data': { content: mockContent() } },
-        { output } = fn(data);
+        res = mockRes(sandbox);
 
-      expect(_.filter(output.components, (cmpt) => !cmpt.role)).to.be.empty;
+      fn(data, res);
+
+      expect(_.filter(getArgs(res.json)[0].components, (cmpt) => !cmpt.role)).to.be.empty;
       sinon.assert.calledThrice(logFn);
     });
 
     it('removes the "_ref" property from all included ANF components', function () {
       const data = { site, '_data': { content: mockContent() } },
-        { output } = fn(data);
+        res = mockRes(sandbox);
 
-      expect(_.filter(output.components, (cmpt) => !!cmpt._ref)).to.be.empty;
+      fn(data, res);
+
+      expect(_.filter(getArgs(res.json)[0].components, (cmpt) => !!cmpt._ref)).to.be.empty;
     });
 
     it('does not render the site config if the request does not have the "config" query param', function () {
       const data = { site, '_data': mockCmpt() },
-        { output } = fn(data);
+        res = mockRes(sandbox);
 
-      expect(output).to.not.have.own.property('language');
+      fn(data, res);
+
+      expect(getArgs(res.json)[0]).to.not.have.own.property('language');
     });
 
-    it('sets the output type to "json"', function () {
-      const data = { site, '_data': { content: mockContent() } };
-
-      expect(fn(data).type).to.equal('json');
-    });
   });
 });

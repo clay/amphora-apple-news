@@ -74,7 +74,7 @@ function sanitizeComponent(cmpt) {
  * @param {Object} data
  * @returns {Object} Component rendered for Apple News Format
  */
-function render(data) {
+function render(data, res) {
   const output = Object.assign({}, _.omit(data._data, ['content', '_ref'])),
     content = _.get(data, '_data.content') || _.get(data, '_data.components');
   let cmpt;
@@ -94,10 +94,7 @@ function render(data) {
     output.siteSlug = data.site.slug;
   }
 
-  return {
-    output,
-    type: 'json'
-  };
+  res.json(output);
 }
 
 module.exports.render = render;
