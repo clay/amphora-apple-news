@@ -3,7 +3,8 @@
 const _ = require('lodash'),
   path = require('path'),
   files = require('fs'),
-  yml = require('js-yaml');
+  yml = require('js-yaml'),
+  { getComponentName } = require('clayutils');
 
 var log = require('./services/log').setup({ file: __filename });
 
@@ -61,7 +62,7 @@ function sanitizeComponent(cmpt) {
     cmpt.components = _.filter(_.map(cmpt.components, (c) => sanitizeComponent(c)), (clean) => !!clean);
     return _.omit(cmpt, '_ref');
   } else {
-    log('warn', 'Component not formatted for apple news, skipping', { name: _.get(cmpt, '_ref', 'unknown') });
+    log('warn', 'Component not formatted for apple news, skipping', { name: getComponentName(_.get(cmpt, '_ref', 'unknown')) });
     return;
   }
 }
