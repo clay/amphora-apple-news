@@ -62,7 +62,7 @@ function sanitizeComponent(cmpt) {
     cmpt.components = _.filter(_.map(cmpt.components, (c) => sanitizeComponent(c)), (clean) => !!clean);
     return _.omit(cmpt, '_ref');
   } else {
-    log('warn', 'Component not formatted for apple news, skipping', { name: getComponentName(_.get(cmpt, '_ref', 'unknown')) });
+    log('warn', 'Component not formatted for apple news, skipping', { cmptName: getComponentName(_.get(cmpt, '_ref', 'unknown')) });
     return;
   }
 }
