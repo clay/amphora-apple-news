@@ -73,11 +73,12 @@ function sanitizeComponent(cmpt) {
  * formats a component for Apple News
  *
  * @param {Object} data
- * @returns {Object} Component rendered for Apple News Format
+ * @param {Object} meta
+ * @param {Object} res
  */
-function render(data, res) {
-  const output = Object.assign({}, _.omit(data._data, ['content', '_ref'])),
-    content = _.get(data, '_data.content') || _.get(data, '_data.components');
+function render(data, meta, res) {
+  const output = Object.assign({}, _.omit(data, ['content', '_ref'])),
+    content = _.get(data, 'content') || _.get(data, 'components'); // TODO: look for any array, not just `content`
   let cmpt;
 
   output.components = [];
@@ -90,9 +91,9 @@ function render(data, res) {
     }
   });
 
-  if (_.get(data, 'locals.query.config', false)) {
-    _.assign(output, getSiteConfig(data.site));
-    output.siteSlug = data.site.slug;
+  if (_.get(meta, 'locals.query.config', false)) {
+    _.assign(output, getSiteConfig(meta.locals.site));
+    output.siteSlug = meta.locals.site.slug;
   }
 
   res.json(output);
@@ -103,4 +104,4 @@ module.exports.render = render;
 // for testing
 module.exports.getSiteConfig = getSiteConfig;
 module.exports.sanitizeComponent = sanitizeComponent;
-module.exports.setLog = (fakeLog) => { log = fakeLog };
+module.exports.setLog = (fakeLog) => { log = fakeLog; };
