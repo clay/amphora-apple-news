@@ -1,3 +1,5 @@
+'use strict';
+
 const _ = require('lodash'),
   filename = __filename.split('/').pop().split('.').shift(),
   lib = require('./' + filename),
@@ -29,16 +31,16 @@ describe(_.startCase(filename), function () {
   function mockContent() {
     return [
       {
-        '_ref': 'some/component/uri1',
+        _ref: 'some/component/uri1',
         role: 'title',
         text: 'This is a Story'
       },
       {
-        '_ref': 'some/unrenderable/component',
+        _ref: 'some/unrenderable/component',
         text: 'I contribute nothing to the discourse !!'
       },
       {
-        '_ref': 'some/component/uri3',
+        _ref: 'some/component/uri3',
         role: 'container',
         components: [
           {
@@ -50,17 +52,17 @@ describe(_.startCase(filename), function () {
             text: 'Photo: zoe\'s photo studio'
           },
           {
-            '_ref': 'some/unrenderable/component',
+            _ref: 'some/unrenderable/component',
             text: 'I should not be rendered for apple news!'
           },
           {
             role: 'section',
             components: [
               {
-                '_ref': 'useless/thing'
+                _ref: 'useless/thing'
               },
               {
-                '_ref': 'useable/thing',
+                _ref: 'useable/thing',
                 role: 'body',
                 text: 'hey there!'
               }
@@ -73,7 +75,7 @@ describe(_.startCase(filename), function () {
 
   function mockCmpt() {
     return {
-      '_ref': 'some/component/uri3',
+      _ref: 'some/component/uri3',
       role: 'container',
       components: [
         {
@@ -81,22 +83,22 @@ describe(_.startCase(filename), function () {
           URL: 'zoe.com/coolpic.jpg'
         },
         {
-          '_ref': 'component/ref',
+          _ref: 'component/ref',
           role: 'caption',
           text: 'Photo: zoe\'s photo studio'
         },
         {
-          '_ref': 'some/unrenderable/component',
+          _ref: 'some/unrenderable/component',
           text: 'I should not be rendered for apple news!'
         },
         {
           role: 'section',
           components: [
             {
-              '_ref': 'useless/thing'
+              _ref: 'useless/thing'
             },
             {
-              '_ref': 'useable/thing',
+              _ref: 'useable/thing',
               role: 'body',
               text: 'hey there!'
             }
@@ -160,54 +162,48 @@ describe(_.startCase(filename), function () {
       };
 
       expect(fn(data)).to.eql(sanitized);
-    })
+    });
   });
 
   describe('render', function () {
     const fn = lib[this.title],
-      site = { dir: FAKE_SITE_DIR };
+      site = { dir: FAKE_SITE_DIR },
+      meta = { locals: { site } },
+      metaWithQuery = { locals: { site, query: { config: true } } };
 
     it('responds with json', function () {
-      const data = { site, '_data': { content: mockContent() } },
-        res = mockRes(sandbox);
+      const res = mockRes(sandbox);
 
-      fn(data, res);
+      fn(mockContent(), meta, res);
 
       sinon.assert.calledOnce(res.json);
     });
 
     it('returns an article without a content array', function () {
-      const data = Object.assign({}, { site }, { '_data': { content: [], title: 'Wow cool' } }),
-        res = mockRes(sandbox);
+      const res = mockRes(sandbox);
 
-      fn(data, res);
+      fn({ content: [], title: 'Wow cool' }, meta, res);
       sinon.assert.calledWith(res.json, { components: [], title: 'Wow cool' });
     });
 
     it('returns an article with the properties from the site config if the request has the "config" query param', function () {
-      const data = { site, '_data': { content: mockContent() }, locals: { query: { config: true } } },
-        res = mockRes(sandbox);
+      const res = mockRes(sandbox);
 
-      fn(data, res);
-
+      fn({ content: mockContent() }, metaWithQuery, res);
       expect(getArgs(res.json)[0]).to.have.own.property('language');
     });
 
     it('returns an article with the site slug if the request has the "config" query param', function () {
-      const data = { site, '_data': { content: mockContent() }, locals: { query: { config: true } } },
-        res = mockRes(sandbox);
+      const res = mockRes(sandbox);
 
-      fn(data, res);
-
+      fn({ content: mockContent() }, metaWithQuery, res);
       expect(getArgs(res.json)[0]).to.have.own.property('siteSlug');
     });
 
     it('includes a component if it has a "role" property', function () {
-      const data = { site, '_data': { content: mockContent() } },
-        res = mockRes(sandbox);
+      const res = mockRes(sandbox);
 
-      fn(data, res);
-
+      fn({ content: mockContent() }, meta, res);
       expect(getArgs(res.json)[0].components[0]).to.eql({
         role: 'title',
         text: 'This is a Story'
@@ -215,30 +211,25 @@ describe(_.startCase(filename), function () {
     });
 
     it('does not include components without a "role" property', function () {
-      const data = { site, '_data': { content: mockContent() } },
-        res = mockRes(sandbox);
+      const res = mockRes(sandbox);
 
-      fn(data, res);
+      fn({ content: mockContent() }, meta, res);
 
       expect(_.filter(getArgs(res.json)[0].components, (cmpt) => !cmpt.role)).to.be.empty;
       sinon.assert.calledThrice(logFn);
     });
 
     it('removes the "_ref" property from all included ANF components', function () {
-      const data = { site, '_data': { content: mockContent() } },
-        res = mockRes(sandbox);
+      const res = mockRes(sandbox);
 
-      fn(data, res);
-
+      fn({ content: mockContent() }, meta, res);
       expect(_.filter(getArgs(res.json)[0].components, (cmpt) => !!cmpt._ref)).to.be.empty;
     });
 
     it('does not render the site config if the request does not have the "config" query param', function () {
-      const data = { site, '_data': mockCmpt() },
-        res = mockRes(sandbox);
+      const res = mockRes(sandbox);
 
-      fn(data, res);
-
+      fn(mockCmpt(), meta, res);
       expect(getArgs(res.json)[0]).to.not.have.own.property('language');
     });
 
