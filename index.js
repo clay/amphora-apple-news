@@ -9,15 +9,14 @@ const _ = require('lodash'),
 let log = require('./services/log').setup({ file: __filename });
 
 /**
- * readFile
- *
  * memoizes function that reads and translates YAML file
  *
  * @param {String} filePath
  * @returns {Object} yml file's contents as a Javascript object
+ * @throws {Error}
  */
-function loadYml() {
-  return _.memoize(function readFile(filePath) {
+function loadYml(filePath) {
+  return _.memoize(function () {
     try {
       const file = files.readFileSync(filePath, 'utf8');
 
@@ -42,7 +41,7 @@ function loadYml() {
 function getSiteConfig(site) {
   const ymlPath = path.resolve(site.dir, 'anf.yml');
 
-  return loadYml(ymlPath);
+  return loadYml(ymlPath)();
 }
 
 /**
@@ -114,6 +113,8 @@ function render(data, meta, res) {
  * @returns {Object}
  */
 function replaceSiteDir({ dir = '', slug = '' }, replacement) {
+  if (!replacement) return { dir };
+
   const SITE_DIR_REGEX = new RegExp(`(\/${slug})$`);
 
   return {
@@ -127,3 +128,4 @@ module.exports.render = render;
 module.exports.getSiteConfig = getSiteConfig;
 module.exports.sanitizeComponent = sanitizeComponent;
 module.exports.setLog = fakeLog => log = fakeLog;
+module.exports.replaceSiteDir = replaceSiteDir;

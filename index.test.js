@@ -234,4 +234,32 @@ describe(_.startCase(filename), function () {
     });
 
   });
+
+  describe('replaceSiteDir', function () {
+    const fn = lib[this.title];
+
+    it('replaces the dir with a specified site', function () {
+      const data = { dir: FAKE_SITE_DIR, slug: 'mockSite' };
+
+      expect(fn(data, 'foo')).to.deep.equal({
+        dir: `${__dirname}/test/config/sites/foo`
+      });
+    });
+
+    it('returns the same dir if slug does not match', function () {
+      const data = { dir: FAKE_SITE_DIR, slug: 'verygoodsite' };
+
+      expect(fn(data, 'foo')).to.deep.equal({
+        dir: FAKE_SITE_DIR
+      });
+    });
+
+    it('returns the same dir if no replacement specified', function () {
+      const data = { dir: FAKE_SITE_DIR, slug: 'verygoodsite' };
+
+      expect(fn(data, '')).to.deep.equal({
+        dir: FAKE_SITE_DIR
+      });
+    });
+  });
 });
