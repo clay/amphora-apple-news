@@ -16,18 +16,20 @@ let log = require('./services/log').setup({ file: __filename });
  * @param {String} filePath
  * @returns {Object} yml file's contents as a Javascript object
  */
-const loadYml = _.memoize(function readFile(filePath) {
-  try {
-    const file = files.readFileSync(filePath, 'utf8');
+function loadYml() {
+  return _.memoize(function readFile(filePath) {
+    try {
+      const file = files.readFileSync(filePath, 'utf8');
 
-    return yml.safeLoad(file); // files.getYaml adds the file extension for some reason, so remove it here
-  } catch (e) {
-    const err = new Error('No anf.yml config file found for this site');
+      return yml.safeLoad(file); // files.getYaml adds the file extension for some reason, so remove it here
+    } catch (e) {
+      const err = new Error('No anf.yml config file found for this site');
 
-    log('error', err.message);
-    throw err;
-  }
-});
+      log('error', err.message);
+      throw err;
+    }
+  });
+}
 
 /**
  * getSiteConfig
