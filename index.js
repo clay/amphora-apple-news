@@ -6,7 +6,7 @@ const _ = require('lodash'),
   yml = require('js-yaml'),
   { getComponentName } = require('clayutils');
 
-var log = require('./services/log').setup({ file: __filename });
+let log = require('./services/log').setup({ file: __filename });
 
 /**
  * readFile
@@ -92,11 +92,31 @@ function render(data, meta, res) {
   });
 
   if (_.get(meta, 'locals.query.config', false)) {
-    _.assign(output, getSiteConfig(meta.locals.site));
-    output.siteSlug = meta.locals.site.slug;
+    const requestedSite = _.get(meta, 'locals.query.replacement', ''),
+      siteMetadata = meta.locals.site,
+      siteData = requestedSite ? replaceSiteDir(siteMetadata, requestedSite) : siteMetadata;
+
+    _.assign(output, getSiteConfig(siteData));
+    output.siteSlug = siteMetadata.slug;
   }
 
   res.json(output);
+}
+
+/**
+ * Replaces the site dir to use the desired site path
+ * @param {Object} siteMetadata
+ * @param {string} siteMetadata.dir
+ * @param {string} siteMetada.slug
+ * @param {string} replacement
+ * @returns {Object}
+ */
+function replaceSiteDir({ dir = '', slug = '' }, replacement) {
+  const SITE_DIR_REGEX = new RegExp(`(\/${slug})$`);
+
+  return {
+    dir: dir.replace(SITE_DIR_REGEX, `/${replacement}`)
+  };
 }
 
 module.exports.render = render;
@@ -104,4 +124,4 @@ module.exports.render = render;
 // for testing
 module.exports.getSiteConfig = getSiteConfig;
 module.exports.sanitizeComponent = sanitizeComponent;
-module.exports.setLog = (fakeLog) => { log = fakeLog; };
+module.exports.setLog = fakeLog => log = fakeLog;
