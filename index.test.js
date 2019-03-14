@@ -233,6 +233,16 @@ describe(_.startCase(filename), function () {
       expect(getArgs(res.json)[0]).to.not.have.own.property('language');
     });
 
+    it('replaces the site dir if the request has a "config" and "replacement" query param', function () {
+      const res = mockRes(sandbox);
+
+      metaWithQuery.locals.query.replacement = 'foo';
+      metaWithQuery.locals.site.slug = 'bar';
+
+      fn(mockCmpt(), metaWithQuery, res);
+      expect(getArgs(res.json)[0]).to.have.own.property('siteSlug');
+    });
+
   });
 
   describe('replaceSiteDir', function () {
