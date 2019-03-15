@@ -95,10 +95,8 @@ function render(data, meta, res) {
     const requestedSite = _.get(meta, 'locals.query.siteOverride', ''),
       siteMetadata = meta.locals.site,
       siteData = requestedSite
-        ? Object.assign(siteMetadata, { dir: getSitePathBySlug(requestedSite) || siteMetadata.dir })
+        ? Object.assign({}, siteMetadata, { dir: getSitePathBySlug(requestedSite) || siteMetadata.dir })
         : siteMetadata;
-
-    console.log({siteData});
 
     _.assign(output, getSiteConfig(siteData));
     output.siteSlug = siteData.slug;

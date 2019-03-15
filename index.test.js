@@ -246,7 +246,7 @@ describe(_.startCase(filename), function () {
 
   });
 
-  describe.only('getSitePathBySlug', function () {
+  describe('getSitePathBySlug', function () {
     const fn = lib[this.title];
 
     beforeEach(function () {
@@ -255,13 +255,23 @@ describe(_.startCase(filename), function () {
 
       fs.existsSync.returns(false);
       fs.existsSync.withArgs('sites/foo').returns(true);
+      fs.existsSync.withArgs('sites/bar').returns(false);
       path.resolve.withArgs(process.cwd(), 'sites', 'foo').returns('sites/foo');
+      path.resolve.withArgs(process.cwd(), 'sites', 'bar').returns('sites/bar');
     });
 
     it('returns an internal path of the site', function () {
       const expected = 'sites/foo';
 
       expect(fn('foo')).to.equal(expected);
+    });
+
+    it('returns an empty string if no slug is passed down', function () {
+      expect(fn()).to.equal('');
+    });
+
+    it('returns an empty string if the directory does not exists', function () {
+      expect(fn('bar')).to.equal('');
     });
   });
 });
