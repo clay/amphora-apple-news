@@ -98,8 +98,7 @@ function render(data, meta, res) {
         ? Object.assign({}, siteMetadata, { dir: getSitePathBySlug(requestedSite) || siteMetadata.dir })
         : siteMetadata;
 
-    _.assign(output, getSiteConfig(siteData));
-    output.siteSlug = siteData.slug;
+    _.assign(output, getSiteConfig(siteData), { siteSlug: siteData.slug });
   }
 
   res.json(output);
