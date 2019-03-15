@@ -6,17 +6,16 @@ const _ = require('lodash'),
   yml = require('js-yaml'),
   { getComponentName } = require('clayutils');
 
-let log = require('./services/log').setup({ file: __filename });
-
 /**
+ * readFile
+ *
  * memoizes function that reads and translates YAML file
  *
  * @param {String} filePath
  * @returns {Object} yml file's contents as a Javascript object
  * @throws {Error}
  */
-function loadYml(filePath) {
-  return _.memoize(function () {
+let loadYml = _.memoize(function readFile(filePath) {
     try {
       const file = files.readFileSync(filePath, 'utf8');
 
@@ -27,8 +26,8 @@ function loadYml(filePath) {
       log('error', err.message);
       throw err;
     }
-  });
-}
+  }),
+  log = require('./services/log').setup({ file: __filename });
 
 /**
  * getSiteConfig
@@ -41,7 +40,7 @@ function loadYml(filePath) {
 function getSiteConfig(site) {
   const ymlPath = path.resolve(site.dir, 'anf.yml');
 
-  return loadYml(ymlPath)();
+  return loadYml(ymlPath);
 }
 
 /**
@@ -93,33 +92,32 @@ function render(data, meta, res) {
   });
 
   if (_.get(meta, 'locals.query.config', false)) {
-    const requestedSite = _.get(meta, 'locals.query.replacement', ''),
+    const requestedSite = _.get(meta, 'locals.query.siteOverride', ''),
       siteMetadata = meta.locals.site,
-      siteData = requestedSite ? replaceSiteDir(siteMetadata, requestedSite) : siteMetadata;
+      siteData = requestedSite
+        ? Object.assign(siteMetadata, { dir: getSitePathBySlug(requestedSite) || siteMetadata.dir })
+        : siteMetadata;
+
+    console.log({siteData});
 
     _.assign(output, getSiteConfig(siteData));
-    output.siteSlug = siteMetadata.slug;
+    output.siteSlug = siteData.slug;
   }
 
   res.json(output);
 }
 
 /**
- * Replaces the site dir to use the desired site path
- * @param {Object} siteMetadata
- * @param {string} siteMetadata.dir
- * @param {string} siteMetada.slug
- * @param {string} replacement
- * @returns {Object}
+ * Returns the absolute path of a site specified by a slug
+ * @param {string} slug
+ * @returns {string}
  */
-function replaceSiteDir({ dir = '', slug = '' }, replacement) {
-  if (!replacement) return { dir };
+function getSitePathBySlug(slug = '') {
+  if (!slug) return '';
 
-  const SITE_DIR_REGEX = new RegExp(`(\/${slug})$`);
+  const sitePath = path.resolve(process.cwd(), 'sites', slug);
 
-  return {
-    dir: dir.replace(SITE_DIR_REGEX, `/${replacement}`)
-  };
+  return files.existsSync(sitePath) ? sitePath : '';
 }
 
 module.exports.render = render;
@@ -128,4 +126,4 @@ module.exports.render = render;
 module.exports.getSiteConfig = getSiteConfig;
 module.exports.sanitizeComponent = sanitizeComponent;
 module.exports.setLog = fakeLog => log = fakeLog;
-module.exports.replaceSiteDir = replaceSiteDir;
+module.exports.getSitePathBySlug = getSitePathBySlug;

@@ -6,6 +6,7 @@ const _ = require('lodash'),
   expect = require('chai').expect,
   sinon = require('sinon'),
   path = require('path'),
+  fs = require('fs'),
   FAKE_SITE_DIR = path.resolve(__dirname, './test/config/sites/mockSite');
 
 describe(_.startCase(filename), function () {
@@ -245,31 +246,22 @@ describe(_.startCase(filename), function () {
 
   });
 
-  describe('replaceSiteDir', function () {
+  describe.only('getSitePathBySlug', function () {
     const fn = lib[this.title];
 
-    it('replaces the dir with a specified site', function () {
-      const data = { dir: FAKE_SITE_DIR, slug: 'mockSite' };
+    beforeEach(function () {
+      sandbox.stub(fs, 'existsSync');
+      sandbox.stub(path, 'resolve');
 
-      expect(fn(data, 'foo')).to.deep.equal({
-        dir: `${__dirname}/test/config/sites/foo`
-      });
+      fs.existsSync.returns(false);
+      fs.existsSync.withArgs('sites/foo').returns(true);
+      path.resolve.withArgs(process.cwd(), 'sites', 'foo').returns('sites/foo');
     });
 
-    it('returns the same dir if slug does not match', function () {
-      const data = { dir: FAKE_SITE_DIR, slug: 'verygoodsite' };
+    it('returns an internal path of the site', function () {
+      const expected = 'sites/foo';
 
-      expect(fn(data, 'foo')).to.deep.equal({
-        dir: FAKE_SITE_DIR
-      });
-    });
-
-    it('returns the same dir if no replacement specified', function () {
-      const data = { dir: FAKE_SITE_DIR, slug: 'verygoodsite' };
-
-      expect(fn(data, '')).to.deep.equal({
-        dir: FAKE_SITE_DIR
-      });
+      expect(fn('foo')).to.equal(expected);
     });
   });
 });
