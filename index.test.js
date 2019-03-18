@@ -234,10 +234,10 @@ describe(_.startCase(filename), function () {
       expect(getArgs(res.json)[0]).to.not.have.own.property('language');
     });
 
-    it('replaces the site dir if the request has a "config" and "replacement" query param', function () {
+    it('replaces the site dir if the request has a "config" and "siteOverride" query param', function () {
       const res = mockRes(sandbox);
 
-      metaWithQuery.locals.query.replacement = 'foo';
+      metaWithQuery.locals.query.siteOverride = 'foo';
       metaWithQuery.locals.site.slug = 'bar';
 
       fn(mockCmpt(), metaWithQuery, res);
