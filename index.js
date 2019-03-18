@@ -6,8 +6,6 @@ const _ = require('lodash'),
   yml = require('js-yaml'),
   { getComponentName } = require('clayutils');
 
-var log = require('./services/log').setup({ file: __filename });
-
 /**
  * readFile
  *
@@ -15,19 +13,21 @@ var log = require('./services/log').setup({ file: __filename });
  *
  * @param {String} filePath
  * @returns {Object} yml file's contents as a Javascript object
+ * @throws {Error}
  */
-const loadYml = _.memoize(function readFile(filePath) {
-  try {
-    const file = files.readFileSync(filePath, 'utf8');
+let loadYml = _.memoize(function readFile(filePath) {
+    try {
+      const file = files.readFileSync(filePath, 'utf8');
 
-    return yml.safeLoad(file); // files.getYaml adds the file extension for some reason, so remove it here
-  } catch (e) {
-    const err = new Error('No anf.yml config file found for this site');
+      return yml.safeLoad(file); // files.getYaml adds the file extension for some reason, so remove it here
+    } catch (e) {
+      const err = new Error('No anf.yml config file found for this site');
 
-    log('error', err.message);
-    throw err;
-  }
-});
+      log('error', err.message);
+      throw err;
+    }
+  }),
+  log = require('./services/log').setup({ file: __filename });
 
 /**
  * getSiteConfig
@@ -92,11 +92,29 @@ function render(data, meta, res) {
   });
 
   if (_.get(meta, 'locals.query.config', false)) {
-    _.assign(output, getSiteConfig(meta.locals.site));
-    output.siteSlug = meta.locals.site.slug;
+    const requestedSite = _.get(meta, 'locals.query.siteOverride', ''),
+      siteMetadata = meta.locals.site,
+      siteData = requestedSite
+        ? Object.assign({}, siteMetadata, { dir: getSitePathBySlug(requestedSite) || siteMetadata.dir })
+        : siteMetadata;
+
+    _.assign(output, getSiteConfig(siteData), { siteSlug: siteData.slug });
   }
 
   res.json(output);
+}
+
+/**
+ * Returns the absolute path of a site specified by a slug
+ * @param {string} slug
+ * @returns {string}
+ */
+function getSitePathBySlug(slug = '') {
+  if (!slug) return '';
+
+  const sitePath = path.resolve(process.cwd(), 'sites', slug);
+
+  return files.existsSync(sitePath) ? sitePath : '';
 }
 
 module.exports.render = render;
@@ -104,4 +122,5 @@ module.exports.render = render;
 // for testing
 module.exports.getSiteConfig = getSiteConfig;
 module.exports.sanitizeComponent = sanitizeComponent;
-module.exports.setLog = (fakeLog) => { log = fakeLog; };
+module.exports.setLog = fakeLog => log = fakeLog;
+module.exports.getSitePathBySlug = getSitePathBySlug;

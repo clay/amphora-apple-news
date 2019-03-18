@@ -6,6 +6,7 @@ const _ = require('lodash'),
   expect = require('chai').expect,
   sinon = require('sinon'),
   path = require('path'),
+  fs = require('fs'),
   FAKE_SITE_DIR = path.resolve(__dirname, './test/config/sites/mockSite');
 
 describe(_.startCase(filename), function () {
@@ -233,5 +234,44 @@ describe(_.startCase(filename), function () {
       expect(getArgs(res.json)[0]).to.not.have.own.property('language');
     });
 
+    it('replaces the site dir if the request has a "config" and "siteOverride" query param', function () {
+      const res = mockRes(sandbox);
+
+      metaWithQuery.locals.query.siteOverride = 'foo';
+      metaWithQuery.locals.site.slug = 'bar';
+
+      fn(mockCmpt(), metaWithQuery, res);
+      expect(getArgs(res.json)[0]).to.have.own.property('siteSlug');
+    });
+
+  });
+
+  describe('getSitePathBySlug', function () {
+    const fn = lib[this.title];
+
+    beforeEach(function () {
+      sandbox.stub(fs, 'existsSync');
+      sandbox.stub(path, 'resolve');
+
+      fs.existsSync.returns(false);
+      fs.existsSync.withArgs('sites/foo').returns(true);
+      fs.existsSync.withArgs('sites/bar').returns(false);
+      path.resolve.withArgs(process.cwd(), 'sites', 'foo').returns('sites/foo');
+      path.resolve.withArgs(process.cwd(), 'sites', 'bar').returns('sites/bar');
+    });
+
+    it('returns an internal path of the site', function () {
+      const expected = 'sites/foo';
+
+      expect(fn('foo')).to.equal(expected);
+    });
+
+    it('returns an empty string if no slug is passed down', function () {
+      expect(fn()).to.equal('');
+    });
+
+    it('returns an empty string if the directory does not exists', function () {
+      expect(fn('bar')).to.equal('');
+    });
   });
 });
