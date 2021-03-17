@@ -20,7 +20,7 @@
   "homepage": "https://github.com/clay/amphora-apple-news#readme",
   "dependencies": {
     "clay-log": "^1.2.1",
-    "clayutils": "^3.0.0-0",
+    "clayutils": "^3.0.0",
     "js-yaml": "^3.10.0",
     "lodash": "^4.17.4"
   },
